@@ -2,7 +2,6 @@
 Test ptaint.py
 """
 import sys
-sys.path.append('../neural-taint-analysis')
 import random
 import ptaint
 
@@ -18,8 +17,8 @@ def test_ptaint_FBD():
 
 def test_ptaint_TBPD():
     from programs import two_byte_partial_dependance as program
-    refs = [[0.6], [0.0]]
-    #inps = [random.random() for _ in range(2)]
+    #refs = [[0.6], [0.0]]
+    inps = [random.random() for _ in range(2)]
     inps = [0.6, 0.5]
 
     inf = ptaint.ptaint_numeric(inps, program, refs)
