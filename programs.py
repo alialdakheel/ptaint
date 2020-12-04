@@ -36,9 +36,11 @@ def key_swap(query_params):
     try:
         d = json.loads(query_params.strip())
         if ("age" in d and isinstance(d["age"], int) and d["age"] > 0) \
-                and ("name" in d and isinstance(d["name"], str) and len(
-            d["name"]) > 0):
+                and ("name" in d and isinstance(d["name"], str) and \
+                len(d["name"]) > 0):
             return json.dumps({"person": d["name"], "howOld": d["age"], "somethingElse": random.randint(0, 10)})
     except:
-        return "Error"
+        pass
+
+    return 'Error'
 

@@ -3,7 +3,7 @@ Presence taint analysis
 """
 import numpy as np
 import json
-from flatten_dict import flatten
+from flatten_dict import flatten, unflatten
 
 def ptaint_numeric(inputs, program, references):
     """
@@ -34,17 +34,37 @@ def ptaint_string(input_string, program, references=None):
     Return:
         Influence: a list of arrays showing influence of each input on a all sinks (output)
     """
+
+    def hamming_dist(str1, str2):
+        count = np.abs(len(str1) - len(str2))
+
+        for i in range(min(len(str1), len(str2))):
+            if str1[i] != str2[i]:
+                count += 1
+
+        return count
+    
     influence_list = list()
-    outputs = np.array(program(input_string))
+    outputs = program(input_string)
     input_dict = json.loads(input_string)
     input_dict = flatten(input_dict)
     temp_input = input_dict.copy()
     
     for i, (k, v) in enumerate(input_dict.items()):
-        del temp_input[k]
-        abs_outputs = np.array(program(json.dumps(unflatten(temp_input))))
-        influence = np.abs(outputs - abs_outputs)
+        if references is None:
+            del temp_input[k]
+        elif k in references:
+            temp_input[k] = references[k]
+        else:
+            del temp_input[k]
+            
+        abs_outputs = program(json.dumps(unflatten(temp_input)))
+        influence = hamming_dist(abs_outputs, outputs)
         influence_list.append(influence)
-        temp_input[k] = v
         
-    return influence_list
+        temp_input[k] = v
+
+    if sum(influence_list) != 0:
+        return [i / sum(influence_list) for i in influence_list]
+    else:
+        return influence_list
