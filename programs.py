@@ -10,9 +10,9 @@ class program():
 
     def __call__(self, inps):
         if isinstance(inps[0], list):
-            return self.run_one(inps)
-        else:
             return self.run_many(inps)
+        else:
+            return self.run_one(inps)
 
     def run_many(self, inps):
         return [self.run_one(n) for n in inps]
@@ -32,6 +32,10 @@ class program():
         pass
 
     def gen_truth(self, inpt):
+        # Defined in subclass
+        pass
+
+    def gen_ref(self):
         # Defined in subclass
         pass
 
@@ -55,6 +59,9 @@ class FBD(program):
     def gen_truth(self, inpt):
         return [1.0, 0.0]
 
+    def gen_ref(self):
+        return [[0.0], [0.0]]
+
 class TBPD(program):
     def __init__(self):
         name = 'two_byte_partial_dependance'
@@ -77,6 +84,9 @@ class TBPD(program):
 
     def gen_truth(self, inpt):
         return [1.0, 1.0 if inpt[0] < 0.5 else 0.0]
+
+    def gen_ref(self):
+        return [[0.6], [0.0]]
 
 def first_byte_value_dependent(input):
     x = input
