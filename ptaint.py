@@ -38,10 +38,13 @@ def ptaint_string(input_string, program, references=None):
     outputs = np.array(program(input_string))
     input_dict = json.loads(input_string)
     input_dict = flatten(input_dict)
-    for i, (k, v) in input_dict.items():
-        temp_input = input_dict.copy()
+    temp_input = input_dict.copy()
+    
+    for i, (k, v) in enumerate(input_dict.items()):
         del temp_input[k]
-        abs_outpus = np.array(program(json.dumps(unflatten(temp_input))))
+        abs_outputs = np.array(program(json.dumps(unflatten(temp_input))))
         influence = np.abs(outputs - abs_outputs)
         influence_list.append(influence)
+        temp_input[k] = v
+        
     return influence_list
