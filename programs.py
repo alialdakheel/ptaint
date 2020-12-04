@@ -2,6 +2,59 @@ import json
 import time
 import random
 
+class program():
+    def __init__(self, name=None, typ=None, input_length=None):
+        self.name=name
+        self.typ=typ
+        self.input_length=input_length
+
+    def __call__(self, inps):
+        if isinstance(inps[0], list):
+            return self.run_one(inps)
+        else:
+            return self.run_many(inps)
+
+    def run_many(self, inps):
+        return [self.run_one(n) for n in inps]
+
+    def gen_inputs(self, k):
+        return [self.gen_input() for _ in range(k)]
+
+    def gen_truths(self, k):
+        return [self.gen_truth() for _ in range(k)]
+
+    def run_one(self, inps):
+        # Defined in subclass
+        pass
+
+    def gen_input(self):
+        # Defined in subclass
+        pass
+
+    def gen_truth(self):
+        # Defined in subclass
+        pass
+
+class FBD(program):
+    def __init__(self):
+        name = 'first_byte_dependent'
+        typ = 'numeric'
+        input_length = 2
+        super(FBD, self).__init__(name, typ, input_length)
+
+    def run_one(self, inps):
+        a = inps[0]
+        b = inps[1]
+        c = 2 * a + b
+        z = c - b
+        return z
+
+    def gen_input(self):
+        return [random.random() for _ in range(self.input_length)]
+
+    def gen_truth(self):
+        return [1.0, 0.0]
+
 
 def first_byte_dependent(input):
     x = input
