@@ -20,8 +20,8 @@ class program():
     def gen_inputs(self, k):
         return [self.gen_input() for _ in range(k)]
 
-    def gen_truths(self, k):
-        return [self.gen_truth() for _ in range(k)]
+    def gen_truths(self, inps):
+        return [self.gen_truth(n) for n in inps]
 
     def run_one(self, inps):
         # Defined in subclass
@@ -31,7 +31,7 @@ class program():
         # Defined in subclass
         pass
 
-    def gen_truth(self):
+    def gen_truth(self, inpt):
         # Defined in subclass
         pass
 
@@ -52,29 +52,31 @@ class FBD(program):
     def gen_input(self):
         return [random.random() for _ in range(self.input_length)]
 
-    def gen_truth(self):
+    def gen_truth(self, inpt):
         return [1.0, 0.0]
 
+class TBPD(program):
+    def __init__(self):
+        name = 'two_byte_partial_dependance'
+        typ = 'numeric'
+        input_length = 2
+        super(FBD, self).__init__(name, typ, input_length)
 
-def first_byte_dependent(input):
-    x = input
-    a = x[0]
-    b = x[1]
-    c = a * a + b
-    z = c - b
-    return z
+    def run_one(self, inps):
+        a = inps[0]
+        b = inps[1]
+        c = a + a
+        if (a < 0.5):
+            z = c + b
+        else:
+            z = c
+        return z
 
-def two_byte_partial_dependance(input):
-    x = input
-    a = x[0]
-    b = x[1]
-    c = a + a
-    if (a < 0.5):
-        z = c + b
-    else:
-        z = c
-    return z
+    def gen_input(self):
+        return [random.random() for _ in range(self.input_length)]
 
+    def gen_truth(self, inpt):
+        return [1.0, 1.0 if inpt[0] < 0.5 else 0.0]
 
 def first_byte_value_dependent(input):
     x = input
