@@ -60,7 +60,7 @@ class TBPD(program):
         name = 'two_byte_partial_dependance'
         typ = 'numeric'
         input_length = 2
-        super(FBD, self).__init__(name, typ, input_length)
+        super(TBPD, self).__init__(name, typ, input_length)
 
     def run_one(self, inps):
         a = inps[0]
