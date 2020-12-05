@@ -11,6 +11,7 @@ from math import isclose
 import numpy as np
 import programs
 import ptaint
+from util import run_neutaint
 
 class Evaluation():
     """
@@ -32,7 +33,8 @@ class Evaluation():
                 ]
         self.refs = [p.gen_ref() for p in self.program_insts]
 
-        self.ptaint_numeric_results = self.evaluate_ptaint_numeric()
+        # self.ptaint_numeric_results = self.evaluate_ptaint_numeric()
+        self.ptaint_numeric_results = self.evaluate_taint(ptaint.ptaint_numeric)
 
     def construct_dataset(self, inst):
         return inst.gen_inputs(self.dataset_length)
@@ -42,13 +44,13 @@ class Evaluation():
         tru = np.array(truth)
         return np.mean(np.abs(tru - results))
 
+
     def evaluate_ptaint_numeric(self):
         self.results_list = list()
         for i, (p, ref) in enumerate(zip(self.program_insts, self.refs)):
             results = list()
             for inpt in self.input_datasets[i]:
                 inf = ptaint.ptaint_numeric(inpt, p, ref)
-                # print(inf, isclose(inf[1], 0.0, abs_tol=1e-14))
                 result = [0.0 if isclose(v, 0.0, abs_tol=1e-14) else 1.0 for v in inf]
                 results.append(result)
             self.results_list.append(results)
@@ -59,6 +61,27 @@ class Evaluation():
 
         return eval_result
 
+    def evaluate_taint(self, method, need_refs=True):
+        self.results_list = list()
+        for i, (p, ref) in enumerate(zip(self.program_insts, self.refs)):
+            results = list()
+            for inpt in self.input_datasets[i]:
+                if need_refs:
+                    taint_args=[inpt, p, ref]
+                else:
+                    taint_args=[inpt, p]
+                inf = method(*taint_args)
+                # print(inf, isclose(inf[1], 0.0, abs_tol=1e-14))
+                result = [0.0 if isclose(v, 0.0, abs_tol=1e-14) else 1.0 for v in inf]
+                results.append(result)
+            self.results_list.append(results)
+        eval_result = [
+                self.compute_errors(r, t) for
+                r, t in zip(self.results_list, self.ground_truths)
+                    ]
+        return eval_result
+
+
 if __name__ == "__main__":
     program_list = [
             'FBD',
@@ -66,4 +89,6 @@ if __name__ == "__main__":
             ]
     dataset_length = 100
     ev = Evaluation(program_list, dataset_length=dataset_length)
+    for i, program in enumerate(program_list):
+        print(f"program: {program}, ptaint_numeric_error_rate: {ev.ptaint_numeric_results[i]}")
 

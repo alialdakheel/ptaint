@@ -3,10 +3,11 @@ import time
 import random
 
 class program():
-    def __init__(self, name=None, typ=None, input_length=None):
+    def __init__(self, name=None, typ=None, input_length=None, output_length=None):
         self.name=name
         self.typ=typ
         self.input_length=input_length
+        self.output_length=output_length
 
     def __call__(self, inps):
         if isinstance(inps[0], list):
@@ -44,7 +45,8 @@ class FBD(program):
         name = 'first_byte_dependent'
         typ = 'numeric'
         input_length = 2
-        super(FBD, self).__init__(name, typ, input_length)
+        output_length = 1
+        super(FBD, self).__init__(name, typ, input_length, output_length)
 
     def run_one(self, inps):
         a = inps[0]
