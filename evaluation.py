@@ -35,6 +35,11 @@ class Evaluation():
 
         # self.ptaint_numeric_results = self.evaluate_ptaint_numeric()
         self.ptaint_numeric_results = self.evaluate_taint(ptaint.ptaint_numeric)
+        self.neutaint_results = self.evaluate_taint(
+                run_neutaint,
+                tolerance=1e-5,
+                need_refs=False
+                )
 
     def construct_dataset(self, inst):
         return inst.gen_inputs(self.dataset_length)
@@ -43,7 +48,6 @@ class Evaluation():
         res = np.array(results)
         tru = np.array(truth)
         return np.mean(np.abs(tru - results))
-
 
     def evaluate_ptaint_numeric(self):
         self.results_list = list()
@@ -54,14 +58,14 @@ class Evaluation():
                 result = [0.0 if isclose(v, 0.0, abs_tol=1e-14) else 1.0 for v in inf]
                 results.append(result)
             self.results_list.append(results)
+
         eval_result = [
                 self.compute_errors(r, t) for
                 r, t in zip(self.results_list, self.ground_truths)
                     ]
-
         return eval_result
 
-    def evaluate_taint(self, method, need_refs=True):
+    def evaluate_taint(self, method, tolerance=1e-14, need_refs=True):
         self.results_list = list()
         for i, (p, ref) in enumerate(zip(self.program_insts, self.refs)):
             results = list()
@@ -75,6 +79,7 @@ class Evaluation():
                 result = [0.0 if isclose(v, 0.0, abs_tol=1e-14) else 1.0 for v in inf]
                 results.append(result)
             self.results_list.append(results)
+
         eval_result = [
                 self.compute_errors(r, t) for
                 r, t in zip(self.results_list, self.ground_truths)
@@ -90,5 +95,8 @@ if __name__ == "__main__":
     dataset_length = 100
     ev = Evaluation(program_list, dataset_length=dataset_length)
     for i, program in enumerate(program_list):
+        print("ptaint:")
         print(f"program: {program}, ptaint_numeric_error_rate: {ev.ptaint_numeric_results[i]}")
+        print('neutaint')
+        print(f"program: {program}, neutaint_error_rate: {ev.neutaint_results[i]}")
 
