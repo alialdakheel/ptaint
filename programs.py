@@ -125,15 +125,17 @@ class JC(program):
         values = random.sample(words + nums, self.json_item_num*2)
         for i in range(self.json_item_num):
             inpt1[keys[i]] = values[i]
-            i2 = random.randint(0, i)
+            i2 = i if random.random() <= 0.5 else i+self.json_item_num
             inpt2[keys[i2]] = values[i2]
+            del keys[i2]
+            del values[i2]
         return [json.dumps(inpt1), json.dumps(inpt2)]
 
     def gen_truth(self, inpt):
-        return [1.0, 1.0 if inpt[0] < 0.5 else 0.0]
+        return [1.0, 1.0]
 
     def gen_ref(self):
-        return [[0.6], [0.0]]
+        return [, [0.0]]
 
 def first_byte_value_dependent(input):
     x = input
