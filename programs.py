@@ -1,5 +1,4 @@
 import json
-import time
 import random
 
 class program():
@@ -90,11 +89,58 @@ class TBPD(program):
     def gen_ref(self):
         return [[0.6], [0.0]]
 
+class JC(program):
+    '''
+    json_compare form: https://github.com/Akagi201/learning-python/blob/master/json/json_compare.py
+    '''
+    def __init__(self):
+        name = 'json_compare'
+        typ = 'string'
+        input_length = 2
+        super(TBPD, self).__init__(name, typ, input_length)
+        self.json_item_num = 2
+        self.json_key_length = 5
+        self.json_value_length = 5
+        import nltk
+        import nltk.corpus.words
+        nltk.download('words')
+        words = [w for w in words.words if len(w) <= 5]
+        nums = [str(n) for n in range(9)]
+
+    def ordered(obj):
+        if isinstance(obj, dict):
+            return sorted((k, ordered(v)) for k, v in obj.items())
+        if isinstance(obj, list):
+            return sorted(ordered(x) for x in obj)
+        else:
+            return obj
+
+    def run_one(self, inps):
+        return 1.0 if ordered(inps[0]) == orderd(inps[1]) else 0.0
+
+    def gen_input(self):
+        inpt1 = dict()
+        inpt2 = dict()
+        keys = random.sample(words, self.json_item_num*2)
+        values = random.sample(words + nums, self.json_item_num*2)
+        for i in range(self.json_item_num):
+            inpt1[keys[i]] = values[i]
+            i2 = random.randint(0, i)
+            inpt2[keys[i2]] = values[i2]
+        return [json.dumps(inpt1), json.dumps(inpt2)]
+
+    def gen_truth(self, inpt):
+        return [1.0, 1.0 if inpt[0] < 0.5 else 0.0]
+
+    def gen_ref(self):
+        return [[0.6], [0.0]]
+
 def first_byte_value_dependent(input):
     x = input
     if x[0] == 0.5:
         return 1
     return 0
+
 
 
 def key_swap(query_params):
