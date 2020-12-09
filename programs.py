@@ -135,7 +135,7 @@ class JC(program):
         return [1.0, 1.0]
 
     def gen_ref(self):
-        return [, [0.0]]
+        return [[0.0], [0.0]]
 
 def first_byte_value_dependent(input):
     x = input
