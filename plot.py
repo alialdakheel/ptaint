@@ -30,7 +30,7 @@ if __name__ == "__main__":
             'FBD',
             'TBPD'
             ]
-    dataset_length = 1000
+    dataset_length = 100
     ev = Evaluation(program_list, dataset_length=dataset_length)
     ptaint_overtaint = list()
     ptaint_undertaint = list()

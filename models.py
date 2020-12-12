@@ -1,4 +1,8 @@
+from programs import JC
+import json
 import torch
+import pdb
+
 
 ## First-Byte Dependent
 class FBDModel:
@@ -82,6 +86,47 @@ class TBPDModel:
         save_path='models/two_byte_partial_dependance.pl'
 
         self.nn = train_model(self.nn, x, y, epoch, lr, batch_size, loss_func, print_freq, save_freq, save_path)
+
+
+class JCModel:
+    def __init__(self, D_in=40):
+        H = 80
+                
+        self.nn = torch.nn.Sequential(
+                    torch.nn.Linear(D_in, H),
+                    torch.nn.Softplus(5),
+                    torch.nn.Linear(H, H),
+                    torch.nn.Softplus(5),
+                    torch.nn.Linear(H, D_in),
+                    torch.nn.Softplus(5),
+                    torch.nn.Linear(D_in, 1),
+                    torch.nn.Sigmoid())
+
+    def words_to_ascii(words):
+        t = list()
+        for word in words:
+            for c in word:
+                if c == ' ':
+                    t.append(0.0)
+                else:
+                    t.append(ord(c)/256)
+
+        return t
+
+    def train(self, x, y):
+        y = y.reshape(len(y))
+        
+        epoch=400
+        batch_size=100
+        lr=0.1
+        loss_func=torch.nn.BCELoss()
+        
+        print_freq = 20
+        save_freq = 20
+        save_path='models/json_compare.pl'
+
+        self.nn = self.train_model(self.nn, x, y, epoch, lr, batch_size, loss_func, print_freq, save_freq, save_path)
+
 
 ## Training Function
 def train_model(model, x, y, nepochs, learning_rate, batch_size, loss_func, print_freq=1000, save_freq=None, save_path=None):

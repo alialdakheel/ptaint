@@ -52,16 +52,40 @@ class FBD(program):
         b = inps[1]
         c = 2 * a + b
         z = c - b
-        return z
+        return [z]
 
     def gen_input(self):
         return [random.random() for _ in range(self.input_length)]
 
     def gen_truth(self, inpt):
-        return [1.0, 0.0]
+        return [[1.0], [0.0]]
 
     def gen_ref(self):
         return [[0.0], [0.0]]
+
+class FBD2(program):
+    def __init__(self):
+        name = 'first_byte_dependent'
+        typ = 'numeric'
+        input_length = 2
+        output_length = 1
+        super(FBD, self).__init__(name, typ, input_length, output_length)
+
+    def run_one(self, inps):
+        a = inps[0]
+        b = inps[1]
+        c = 2 * a + b
+        z = c - b
+        return [z, z+b]
+
+    def gen_input(self):
+        return [random.random() for _ in range(self.input_length)]
+
+    def gen_truth(self, inpt):
+        return [[1.0], [0.0]]
+
+    def gen_ref(self):
+        return [[0.0, 1.0], [0.0, 1.0]]
 
 class TBPD(program):
     def __init__(self):
@@ -78,18 +102,18 @@ class TBPD(program):
             z = c + b
         else:
             z = c
-        return z
+        return [z]
 
     def gen_input(self):
         return [random.random() for _ in range(self.input_length)]
 
     def gen_truth(self, inpt):
-        return [1.0, 1.0 if inpt[0] < 0.5 else 0.0]
+        return [[1.0], [1.0] if inpt[0] < 0.5 else [0.0]]
 
     def gen_ref(self):
         return [[0.6], [0.0]]
 
-class JC:
+class JC(program):
     '''
     json_compare form: https://github.com/Akagi201/learning-python/blob/master/json/json_compare.py
     '''
@@ -97,6 +121,7 @@ class JC:
         name = 'json_compare'
         typ = 'string'
         input_length = 2
+        super(JC, self).__init__(name, typ, input_length)
         self.json_item_num = 2
         self.json_key_length = 5
         self.json_value_length = 5
@@ -106,33 +131,57 @@ class JC:
         self.words = [w for w in words.words() if len(w) <= 5]
         self.nums = [str(n) for n in range(9)]
 
-    def ordered(obj):
+    def ordered(self, obj):
         if isinstance(obj, dict):
-            return sorted((k, JC.ordered(v)) for k, v in obj.items())
+            return sorted((k, self.ordered(v)) for k, v in obj.items())
         if isinstance(obj, list):
-            return sorted(JC.ordered(x) for x in obj)
+            return sorted(self.ordered(x) for x in obj)
         else:
             return obj
 
-    def run_one(self, inps):
-        return 1.0 if JC.ordered(inps[0]) == JC.ordered(inps[1]) else 0.0
+    def run_one(self, inpt):
+        inpt_dict = json.loads(inpt)
+        inps = list(inpt_dict.values())
+        return [1.0] if self.ordered(inps[0]) == self.ordered(inps[1]) else [0.0]
 
     def gen_input(self):
         inpt1 = dict()
         inpt2 = dict()
         keys = random.sample(self.words, self.json_item_num*2)
         values = random.sample(self.words + self.nums, self.json_item_num*2)
+        r = random.random()
         for i in range(self.json_item_num):
             inpt1[keys[i]] = values[i]
-            i2 = i if random.random() <= 0.5 else i+self.json_item_num
+            i2 = i if r <= 0.5 else i+self.json_item_num
             inpt2[keys[i2]] = values[i2]
-        return [json.dumps(inpt1), json.dumps(inpt2)]
+        return json.dumps({"input1": inpt1, "input2": inpt2})
 
-    def gen_truth(self, inpt):
-        return [1.0, 1.0]
+    def gen_truth(self, inpt, taint_analysis='ptaint'):
+        inpt_dict = json.loads(inpt)
+        inps = list(inpt_dict.values())
+        if taint_analysis == 'ptaint':
+            if self.ordered(inps[0]) == self.ordered(inps[1]):
+                return [[1.0], [1.0], [1.0], [1.0]]
+            else:
+                return [[0.0], [0.0], [0.0], [0.0]]
+        else:
+            return [[1.0], [1.0], [1.0], [1.0]]
 
     def gen_ref(self):
-        return [[0.0], [0.0]]
+        ref1 = {
+                ("input1", "0"*self.json_key_length): "."*self.json_value_length
+                # for _ in range(self.json_item_num)
+                }
+        ref2 = {
+                ("input1", "1"*self.json_key_length): ","*self.json_value_length
+                }
+        ref3 = {
+                ("input2", "2"*self.json_key_length): "*"*self.json_value_length
+                }
+        ref4 = {
+                ("input2", "3"*self.json_key_length): "#"*self.json_value_length
+                }
+        return [[ref1], [ref2], [ref3], [ref4]]
 
 def first_byte_value_dependent(input):
     x = input
