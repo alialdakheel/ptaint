@@ -9,8 +9,11 @@ class program():
         self.output_length=output_length
 
     def __call__(self, inps):
-        if isinstance(inps[0], list):
-            return self.run_many(inps)
+        if isinstance(inps, list):
+            if isinstance(inps[0], list):
+                return self.run_many(inps)
+            else:
+                return self.run_one(inps)
         else:
             return self.run_one(inps)
 
