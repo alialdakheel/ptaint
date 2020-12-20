@@ -123,7 +123,7 @@ class JC(program):
     def __init__(self):
         name = 'json_compare'
         typ = 'string'
-        input_length = 2
+        input_length = 40
         super(JC, self).__init__(name, typ, input_length)
         self.json_item_num = 2
         self.json_key_length = 5
